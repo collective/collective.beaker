@@ -1,0 +1,9 @@
+Changelog for collective.beaker
+
+    (name of developer listed in brackets)
+
+collective.beaker - 1.0a1 Unreleased
+
+    - Initial package structure.
+      [zopeskel]
+

@@ -1,0 +1,45 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    xmlns:beaker="http://namespaces.plone.org/beaker"
+    i18n_domain="collective.beaker">
+    
+    <include file="meta.zcml" />
+    
+    <!-- Zope 2.10 backport -->
+    <include
+        zcml:condition="not-installed ZPublisher.interfaces"
+        package="ZPublisherEventsBackport"
+        />
+    
+    <!-- Register the ISessionConfig and ICacheManager utilities as
+         appropriate, depending on what is found in zope.conf
+    -->
+    <beaker:loadConfiguration />
+    
+    <!-- The ISession adapter -->
+    <adapter factory=".session.ZopeSession" />
+    
+    <!-- Register event subscribers -->
+    <subscriber handler=".session.configureSessionOnStart" />
+    <subscriber handler=".session.persistSessionOnSuccess" />
+    <subscriber handler=".session.persistSessionOnFailure" />
+    
+    <!-- Mark Beaker classes with Zope interfaces -->
+    <class class="beaker.session.SessionObject">
+        <implements interface=".interfaces.ISession" />
+    </class>
+
+    <class class="beaker.session.Session">
+        <implements interface=".interfaces.ISession" />
+    </class>
+
+    <class class="beaker.session.CookieSession">
+        <implements interface=".interfaces.ISession" />
+    </class>
+
+    <class class="beaker.cache.CacheManager">
+        <implements interface=".interfaces.ICacheManager" />
+    </class>
+
+</configure>
