@@ -2,8 +2,8 @@ Changelog for collective.beaker
 
     (name of developer listed in brackets)
 
-collective.beaker - 1.0a1 Unreleased
+collective.beaker - 1.0b1 (2009-12-10)
 
-    - Initial package structure.
-      [zopeskel]
+    - Initial release
+      [optilude]
 
