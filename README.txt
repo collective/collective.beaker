@@ -113,13 +113,13 @@ Please note that:
 
 For the session settings, the following defaults apply:
 
-* ``invalidate_corrupt``=``True``, so corrupt sessions are invalidated
-* ``type``=``None`` and ``data_dir``=``None``, thus defaulting to an in-memory
+* ``invalidate_corrupt=True``, so corrupt sessions are invalidated
+* ``type=None`` and ``data_dir=None``, thus defaulting to an in-memory
   session
-* ``key``=``beaker.session.id`` - this is the cookie key
-* ``timeout``=``None``, so sessions don't time out
-* ``secret``=``None``, so session cookies are not encrypted
-* ``log_file``=``None``, so there is no logging
+* ``key=beaker.session.id`` - this is the cookie key
+* ``timeout=None``, so sessions don't time out
+* ``secret=None``, so session cookies are not encrypted
+* ``log_file=None``, so there is no logging
 
 Using sessions
 --------------
