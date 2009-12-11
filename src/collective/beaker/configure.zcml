@@ -3,7 +3,7 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     xmlns:beaker="http://namespaces.plone.org/beaker"
     i18n_domain="collective.beaker">
-    
+
     <include file="meta.zcml" />
     
     <!-- Zope 2.10 backport -->

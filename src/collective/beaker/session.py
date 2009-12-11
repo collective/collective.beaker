@@ -4,7 +4,7 @@ from zope.component import adapter, queryUtility
 from zope.publisher.interfaces.http import IHTTPRequest
 
 from collective.beaker.interfaces import ISession, ISessionConfig, ENVIRON_KEY
-from ZPublisher.interfaces import IPubStart, IPubBeforeCommit, IPubBeforeAbort
+from ZPublisher.interfaces import IPubStart, IPubSuccess, IPubFailure
 
 from beaker.session import SessionObject
 
@@ -35,20 +35,13 @@ def closeSession(request):
             sessionInstructions = session.request
             if sessionInstructions.get('set_cookie', False):
                 
-                # XXX: This approach is what Beaker does itself, and it seems
-                # to work best TTW (no superfluous/stale cookies on delete).
-                # It breaks the functional tests, though                
-                # cookie = sessionInstructions['cookie_out']
-                # if cookie:
-                #     request.response.addHeader('Set-Cookie', cookie)
+                cookieOut = sessionInstructions['cookie_out']
+                cookieObj = session.cookie[session.key]
+                cookieArgs = dict([(k,v) for k,v in cookieObj.items() if v])
                 
-                # XXX: This works in tests, but sometimes seems to leave
-                # stale cookies TTW when sessions are deleted.
-                
-                cookie = session.cookie[session.key]
-                if cookie:
-                    cookieArgs = dict([(k,v) for k,v in cookie.items() if v])
-                    request.response.setCookie(cookie.key, cookie.value, **cookieArgs)
+                if cookieOut:
+                    cookieArgs.setdefault('path', session._path)
+                    request.response.setCookie(cookieObj.key, cookieObj.value, **cookieArgs)
 
 # Event handlers
 
@@ -56,11 +49,11 @@ def closeSession(request):
 def configureSessionOnStart(event):
     initializeSession(event.request)
 
-@adapter(IPubBeforeCommit)
+@adapter(IPubSuccess)
 def persistSessionOnSuccess(event):
     closeSession(event.request)
 
-@adapter(IPubBeforeAbort)
+@adapter(IPubFailure)
 def persistSessionOnFailure(event):
     if not event.retry:
         closeSession(event.request)
