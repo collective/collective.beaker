@@ -1,6 +1,13 @@
 Changelog for collective.beaker
 ===============================
 
+1.0b2 (unreleased)
+------------------
+
+    - Make the ZCML directive more resilient to configurations where there is
+      no product_config. This can happen in test setup, for example.
+      [optilude]
+
 1.0b1 (2009-12-10)
 ------------------
 

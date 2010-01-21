@@ -37,41 +37,47 @@ def beakerConfiguration(_context):
     """
     
     cfg = getConfiguration()
+    
+    if not hasattr(cfg, 'product_config'):
+        return
+    
     beakerConfig = cfg.product_config.get('beaker', {})
     
-    if beakerConfig:
-        cacheConfig = parse_cache_config_options(beakerConfig)
+    if not beakerConfig:
+        return
+    
+    cacheConfig = parse_cache_config_options(beakerConfig)
+    
+    sessionConfig = {}
+    for key, value in beakerConfig.items():
+        if key.startswith('session.'):
+            sessionConfig[key[8:]] = value
+        elif key.startswith('beaker.session.'):
+            sessionConfig[key[15:]] = value
+    coerce_session_params(sessionConfig)
+    
+    # If we have cache config, register an ICacheManager utility
+    if cacheConfig:
+        cacheManager = CacheManager(**cacheConfig)
+        _context.action(
+            discriminator = ('utility', ICacheManager, u""),
+            callable = handler,
+            args = ('registerUtility', cacheManager, ICacheManager, u""),
+            kw = dict(info=cacheConfig),
+        )
+    
+    # If we have session config, register these as an ISessionConfig
+    # utility, which will then be looked up when the session factory is
+    # invoked.
+    if sessionConfig:
         
-        sessionConfig = {}
-        for key, value in beakerConfig.items():
-            if key.startswith('session.'):
-                sessionConfig[key[8:]] = value
-            elif key.startswith('beaker.session.'):
-                sessionConfig[key[15:]] = value
-        coerce_session_params(sessionConfig)
+        # Set defaults for keys not set in the configuration
+        sessionConfigWithDefaults = defaultSessionConfig.copy()
+        sessionConfigWithDefaults.update(sessionConfig)
         
-        # If we have cache config, register an ICacheManager utility
-        if cacheConfig:
-            cacheManager = CacheManager(**cacheConfig)
-            _context.action(
-                discriminator = ('utility', ICacheManager, u""),
-                callable = handler,
-                args = ('registerUtility', cacheManager, ICacheManager, u""),
-                kw = dict(info=cacheConfig),
-            )
-        
-        # If we have session config, register these as an ISessionConfig
-        # utility, which will then be looked up when the session factory is
-        # invoked.
-        if sessionConfig:
-            
-            # Set defaults for keys not set in the configuration
-            sessionConfigWithDefaults = defaultSessionConfig.copy()
-            sessionConfigWithDefaults.update(sessionConfig)
-            
-            _context.action(
-                discriminator = ('utility', ISessionConfig, u""),
-                callable = handler,
-                args = ('registerUtility', sessionConfigWithDefaults, ISessionConfig, u""),
-                kw = dict(info=sessionConfig),
-            )
+        _context.action(
+            discriminator = ('utility', ISessionConfig, u""),
+            callable = handler,
+            args = ('registerUtility', sessionConfigWithDefaults, ISessionConfig, u""),
+            kw = dict(info=sessionConfig),
+        )
