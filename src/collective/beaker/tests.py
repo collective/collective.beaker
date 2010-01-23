@@ -1,3 +1,4 @@
+
 import time
 import unittest
 
@@ -16,7 +17,10 @@ from Products.Five import fiveconfigure
 from Products.Five import zcml
 
 from zope.component import getUtility
-from collective.beaker.interfaces import ISession, ICacheManager
+
+from collective.beaker.interfaces import ISession
+from collective.beaker.interfaces import ICacheManager
+from collective.beaker.interfaces import ISessionConfig
 
 from beaker.cache import cache_region
 
@@ -82,8 +86,6 @@ class TestSession(ptc.FunctionalTestCase):
     
     def test_create_persist(self):
         
-        self.fail
-        
         self.browser.open(self.url)
         self.assertEquals('-1', self.browser.contents)
         
@@ -99,6 +101,32 @@ class TestSession(ptc.FunctionalTestCase):
         self.assertEquals('2', self.browser.contents)
         self.browser.open(self.url)
         self.assertEquals('2', self.browser.contents)
+
+    def test_create_persist_signed_cookie(self):
+        
+        config = getUtility(ISessionConfig)
+        config['secret'] = 'password'
+        
+        try:
+            
+            self.browser.open(self.url)
+            self.assertEquals('-1', self.browser.contents)
+            
+            self.browser.open(self.url + 'reset')
+            self.assertEquals('0', self.browser.contents)
+            
+            self.browser.open(self.url + 'increment')
+            self.assertEquals('1', self.browser.contents)
+            self.browser.open(self.url)
+            self.assertEquals('1', self.browser.contents)
+            
+            self.browser.open(self.url + 'increment')
+            self.assertEquals('2', self.browser.contents)
+            self.browser.open(self.url)
+            self.assertEquals('2', self.browser.contents)
+        
+        finally:
+            del config['secret']
     
     def test_invalidate(self):
         self.browser.open(self.url)
@@ -216,7 +244,7 @@ class TestTestSession(unittest.TestCase):
         self.assertEquals(False, session._saved)
         session.save()
         self.assertEquals(True, session._saved)
-
+    
     def test_deleted(self):
         provideAdapter(testingSession)
         
@@ -236,7 +264,7 @@ class TestTestSession(unittest.TestCase):
         self.assertEquals(False, session._invalidated)
         session.invalidate()
         self.assertEquals(True, session._invalidated)
-
+    
     def test_accessed_setitem(self):
         provideAdapter(testingSession)
         
@@ -299,13 +327,13 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
         session['foo'] = 'bar'
-    
+        
         self.assertEquals('bar', session['foo'])
         del session['foo']
         self.failIf('foo' in session)
         
         self.failIf(session.last_accessed is None)
         self.assertEquals(True  , session.accessed())
-    
+
 def test_suite():
     return unittest.defaultTestLoader.loadTestsFromName(__name__)

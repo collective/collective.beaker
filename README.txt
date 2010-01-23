@@ -239,6 +239,20 @@ You can of course add your own ``setUp`` and ``tearDown`` methods to the
 layer. The important thing is that the ``BeakerConfigLayer`` comes before
 the ``PloneSiteLayer``, which will configure the site.
 
+This setup will use default settings (see ``testing.py`` for the exact
+values), but you can manipulate these on a per-setting basis. For example::
+
+    from zope.component import getUtility
+    from collective.beaker.interfaces import ISessionConfig
+    
+    config = getUtility(ISessionConfig)
+    config['secret'] = 'password'
+
+Bear in mind that this is normally a global utility, so any changes will
+cross test boundaries unless you also tear down your settings properly. Thus,
+it is probably more appropriate to do this setup in a layer than in an
+individual test.
+
 When writing tests that use Beaker sessions, if you are not performing
 functional testing using something like ``zope.testbrowser``, you may also
 need to simulate the request start/end events that ``collective.beaker``

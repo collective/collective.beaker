@@ -4,6 +4,9 @@ Changelog for collective.beaker
 1.0b2 (unreleased)
 ------------------
 
+    - Fix support for signed cookies (the ``secret`` parameter) in sessions.
+      [optilude]
+
     - Provide better testing tools and more resilient test setup.
       [optilude]
 
