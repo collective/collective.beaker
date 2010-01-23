@@ -1,7 +1,7 @@
 Changelog for collective.beaker
 ===============================
 
-1.0b2 (unreleased)
+1.0b2 (2010-01-23)
 ------------------
 
     - Fix support for signed cookies (the ``secret`` parameter) in sessions.
