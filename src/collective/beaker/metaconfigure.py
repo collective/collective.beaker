@@ -35,7 +35,6 @@ def beakerConfiguration(_context):
     * ISessionConfig, a dictionary of session parameters from zope.conf
     * ICacheManager, a Beaker CacheManager instance configured from zope.conf
     """
-    
     cfg = getConfiguration()
     
     if not hasattr(cfg, 'product_config'):

@@ -1,6 +1,11 @@
 import time
 import unittest
 
+import zope.component.testing
+from zope.component import provideAdapter
+
+from zope.publisher.browser import TestRequest
+
 import collective.testcaselayer.ptc
 import collective.beaker
 
@@ -10,25 +15,15 @@ from Products.Five.browser import BrowserView
 from Products.Five import fiveconfigure
 from Products.Five import zcml
 
-from App.config import getConfiguration
-
 from zope.component import getUtility
 from collective.beaker.interfaces import ISession, ICacheManager
 
 from beaker.cache import cache_region
 
-ptc.setupPloneSite()
+from collective.beaker.testing import BeakerConfigLayer
+from collective.beaker.testing import testingSession
 
-# Simulates data from ZConfig.
-config = {
-    'cache.type':           'memory',
-    'cache.regions':        'short, long',
-    'cache.short.expire':   '3',
-    'cache.long.expire':    '10',
-    'session.type':         'memory',
-    'session.key':          'beaker.session',
-    'session.auto':         'off',
-}
+ptc.setupPloneSite()
 
 # Views used to test session behavior
 
@@ -55,13 +50,9 @@ class SessionTestView(BrowserView):
 def cachedShort():
     return time.time()
 
-class BeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
-
+class CollectiveBeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
+    
     def afterSetUp(self):
-        # Simulate ZConfig parsing <product-config beaker />
-        cfg = getConfiguration()
-        cfg.product_config = {'beaker': config}
-        
         fiveconfigure.debug_mode = True
         
         zcml.load_config('configure.zcml', package=collective.beaker)
@@ -76,7 +67,9 @@ class BeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
         </configure>""")
         fiveconfigure.debug_mode = False
 
-Layer = BeakerLayer([collective.testcaselayer.ptc.ptc_layer])
+# Make sure we load the beaker config layer first, otherwise we may not have
+# configuration by the time the beaker data is loaded
+Layer = CollectiveBeakerLayer([BeakerConfigLayer, collective.testcaselayer.ptc.ptc_layer])
 
 class TestSession(ptc.FunctionalTestCase):
     
@@ -191,6 +184,128 @@ class TestCacheRegion(ptc.PloneTestCase):
         self.assertEquals(1, v1)
         self.assertEquals(1, v2)
         self.assertEquals(2, v3)
+
+class TestTestSession(unittest.TestCase):
+    
+    def tearDown(self):
+        zope.component.testing.tearDown()
+    
+    def test_test_session_not_registered(self):
+        request = TestRequest()
+        self.assertEquals(None, ISession(request, None))
+    
+    def test_test_session_unique_to_request(self):
+        provideAdapter(testingSession)
+        
+        request1 = TestRequest()
+        request2 = TestRequest()
+        
+        session1 = ISession(request1)
+        session2 = ISession(request2)
+        
+        session1['foo'] = 'bar'
+        self.assertEquals('bar', session1['foo'])
+        self.failIf('foo' in session2)
+    
+    def test_saved(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        
+        self.assertEquals(False, session._saved)
+        session.save()
+        self.assertEquals(True, session._saved)
+
+    def test_deleted(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        
+        self.assertEquals(False, session._deleted)
+        session.delete()
+        self.assertEquals(True, session._deleted)
+    
+    def test_invalidated(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        
+        self.assertEquals(False, session._invalidated)
+        session.invalidate()
+        self.assertEquals(True, session._invalidated)
+
+    def test_accessed_setitem(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        
+        self.assertEquals(None, session.last_accessed)
+        self.assertEquals(False, session.accessed())
+        
+        session['foo'] = 'bar'
+        
+        self.failIf(session.last_accessed is None)
+        self.assertEquals(True  , session.accessed())
+    
+    def test_accessed_get(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        
+        self.assertEquals(None, session.last_accessed)
+        self.assertEquals(False, session.accessed())
+        
+        session.get('foo')
+        
+        self.failIf(session.last_accessed is None)
+        self.assertEquals(True  , session.accessed())
+    
+    def test_accessed_contains(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        
+        self.assertEquals(None, session.last_accessed)
+        self.assertEquals(False, session.accessed())
+        
+        'foo' in session
+        
+        self.failIf(session.last_accessed is None)
+        self.assertEquals(True  , session.accessed())
+    
+    def test_accessed_setdefault(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        
+        self.assertEquals(None, session.last_accessed)
+        self.assertEquals(False, session.accessed())
+        
+        session.setdefault('foo', 'bar')
+        
+        self.failIf(session.last_accessed is None)
+        self.assertEquals(True  , session.accessed())
+    
+    def test_get_del(self):
+        provideAdapter(testingSession)
+        
+        request = TestRequest()
+        session = ISession(request)
+        session['foo'] = 'bar'
+    
+        self.assertEquals('bar', session['foo'])
+        del session['foo']
+        self.failIf('foo' in session)
+        
+        self.failIf(session.last_accessed is None)
+        self.assertEquals(True  , session.accessed())
     
 def test_suite():
     return unittest.defaultTestLoader.loadTestsFromName(__name__)

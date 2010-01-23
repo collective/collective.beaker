@@ -202,3 +202,103 @@ To invalidate the cache, you could call::
     >>> region_invalidate(my_function, 'short')
 
 Again, refer to the Beaker documentation for details.
+
+Testing
+-------
+
+If you are writing integration tests for code that uses beaker sessions or
+caches, you need to ensure that beaker is configured before you call the
+relevant code. Otherwise, you are liable to get component lookup errors
+on ``ISessionConfig`` or ``ICacheManager`` layers. This is because integration
+tests written with ``ZopeTestCase``/``PloneTestCase`` do not read your
+``zope.conf`` and so the ``collective.beaker`` configuration code does not
+have any configuration data when it is loaded.
+
+You can deal with this in one of two ways:
+
+* Register your own ``ISessionConfig`` and/or ``ICacheManager`` utilities.
+  See ``interfaces.py`` for details.
+* Provide "fake" ZConfig settings before ZCML processing takes place.
+
+You can use the test layer in ``collective.beaker.testing.BeakerConfigLayer``
+to do the latter. You need to make sure that this layer is mixed in before
+any layer that executes ZCML processing. For example::
+
+    from colective.beaker.testing import BeakerConfigLayer
+    from Products.PloneTestCase.layer import PloneSiteLayer
+    from Products.PloneTestCase.ptc import PloneTestCase
+    
+    class MyLayer(BeakerConfigLayer, PloneSiteLayer):
+        pass
+    
+    class TestCase(PloneTestCase):
+        
+        layer = MyLayer
+    
+You can of course add your own ``setUp`` and ``tearDown`` methods to the
+layer. The important thing is that the ``BeakerConfigLayer`` comes before
+the ``PloneSiteLayer``, which will configure the site.
+
+When writing tests that use Beaker sessions, if you are not performing
+functional testing using something like ``zope.testbrowser``, you may also
+need to simulate the request start/end events that ``collective.beaker``
+listens to in order to configure the session.
+
+For example::
+
+    from collective.beaker.session import initializeSession, closeSession
+    
+    ...
+    
+    class TestCase(PloneTestCase):
+        
+        layer = MyLayer
+        
+        def test_something(self):
+            request = self.app.REQUEST
+            initializeSession(request)
+            
+            # perform your test here
+            
+            closeSession(request)
+
+In a unit test, it is probably easier to just provide a mock ``ISession``
+adapter for the request. There is a mock session implementation in this
+package which can help you with that::
+    
+    import unittest
+    import zope.component.testing
+    
+    from zope.component import provideAdapter
+    from collective.beaker.testing import testingSession
+    
+    from collective.beaker.interfaces import ISession
+    from zope.publisher.browser import TestRequest
+    
+    
+    class MyUnitTestCase(unittest.TestCase):
+        
+        def setUp(self):
+            provideAdapter(testingSession)
+            ...
+        
+        def tearDown(self):
+            zope.component.testing.tearDown()
+        
+        def test_something(self):
+            request = TestRequest()
+            session = ISession(request)
+            ...
+
+Like the "real" session, the test session is tied to the request, so you
+should get the same object back each time you look up the adapter on the
+request. You can also check the following properties to see how the session
+has been used:
+
+* ``_saved`` is True if ``save()`` has been called once.
+* ``_invalidated`` is True if ``invalidate()`` has been called once.
+* ``_deleted`` is True if ``delete()`` has been called once.
+
+Finally, ``accessed()`` will return True and the ``last_accessed`` attribute
+will be set to the current date/time when common dictionary operations are
+used.
