@@ -1,6 +1,11 @@
 Changelog for collective.beaker
 ===============================
 
+1.0b3 (2011-05-11)
+------------------
+    - fixed spelling issue in setup.py
+      [ajung]
+
 1.0b2 (2010-01-23)
 ------------------
 
