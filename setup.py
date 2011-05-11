@@ -25,7 +25,7 @@ setup(name='collective.beaker',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          'beaker',
+          'Beaker',
           'zope.interface',
           'zope.component',
           'Zope2',
