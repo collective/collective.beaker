@@ -1,6 +1,12 @@
 Changelog for collective.beaker
 ===============================
 
+1.0b4 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 1.0b3 (2011-05-11)
 ------------------
     - fixed spelling issue in setup.py
