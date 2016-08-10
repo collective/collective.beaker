@@ -78,6 +78,7 @@ class ICacheManager(Interface):
         """Obtain a cache by name. Keyword arguments can be used to specify
         caching options, overriding the global options.
 
-        See the `Beaker documentation <http://beaker.groovie.org/caching.html>_`
+        See the
+        `Beaker documentation <http://beaker.groovie.org/caching.html>_`
         for further details.
         """

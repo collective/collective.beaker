@@ -64,7 +64,8 @@ class CollectiveBeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
 
         zcml.load_config('configure.zcml', package=collective.beaker)
         zcml.load_string("""\
-        <configure package="collective.beaker" xmlns="http://namespaces.zope.org/browser">
+        <configure package="collective.beaker"
+            xmlns="http://namespaces.zope.org/browser">
             <view
                 name="session-test"
                 for="*"
