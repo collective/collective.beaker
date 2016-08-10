@@ -17,13 +17,13 @@ class BeakerConfigLayer(object):
 
     # Simulated ZConfig data
     zconfigData = {
-        'cache.type':           'memory',
-        'cache.regions':        'short, long',
-        'cache.short.expire':   '3',
-        'cache.long.expire':    '10',
-        'session.type':         'memory',
-        'session.key':          'beaker.session',
-        'session.auto':         'off',
+        'cache.type': 'memory',
+        'cache.regions': 'short, long',
+        'cache.short.expire': '3',
+        'cache.long.expire': '10',
+        'session.type': 'memory',
+        'session.key': 'beaker.session',
+        'session.auto': 'off',
     }
 
     @classmethod
@@ -94,4 +94,5 @@ class TestSession(dict):
 @implementer(ISession)
 @adapter(IRequest)
 def testingSession(request):
-    return request._environ.setdefault('collective.beaker.testing.session', TestSession())
+    return request._environ.setdefault(
+        'collective.beaker.testing.session', TestSession())
