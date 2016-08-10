@@ -13,9 +13,9 @@ from zope.component.zcml import handler
 # Default session options - copied from beaker.middleware
 defaultSessionConfig = dict(
         invalidate_corrupt=True,
-        type=None, 
+        type=None,
         data_dir=None,
-        key='beaker.session.id', 
+        key='beaker.session.id',
         timeout=None,
         secret=None,
         log_file=None,
@@ -29,24 +29,24 @@ class IBeakerConfiguration(Interface):
 
 def beakerConfiguration(_context):
     """Read configuration from zope.conf and register components accordingly.
-    
+
     This may result in one or two unnamed utilities:
-    
+
     * ISessionConfig, a dictionary of session parameters from zope.conf
     * ICacheManager, a Beaker CacheManager instance configured from zope.conf
     """
     cfg = getConfiguration()
-    
+
     if not hasattr(cfg, 'product_config'):
         return
-    
+
     beakerConfig = cfg.product_config.get('beaker', {})
-    
+
     if not beakerConfig:
         return
-    
+
     cacheConfig = parse_cache_config_options(beakerConfig)
-    
+
     sessionConfig = {}
     for key, value in beakerConfig.items():
         if key.startswith('session.'):
@@ -54,7 +54,7 @@ def beakerConfiguration(_context):
         elif key.startswith('beaker.session.'):
             sessionConfig[key[15:]] = value
     coerce_session_params(sessionConfig)
-    
+
     # If we have cache config, register an ICacheManager utility
     if cacheConfig:
         cacheManager = CacheManager(**cacheConfig)
@@ -64,16 +64,16 @@ def beakerConfiguration(_context):
             args = ('registerUtility', cacheManager, ICacheManager, u""),
             kw = dict(info=cacheConfig),
         )
-    
+
     # If we have session config, register these as an ISessionConfig
     # utility, which will then be looked up when the session factory is
     # invoked.
     if sessionConfig:
-        
+
         # Set defaults for keys not set in the configuration
         sessionConfigWithDefaults = defaultSessionConfig.copy()
         sessionConfigWithDefaults.update(sessionConfig)
-        
+
         _context.action(
             discriminator = ('utility', ISessionConfig, u""),
             callable = handler,

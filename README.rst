@@ -55,7 +55,7 @@ To configure Beaker, add a section to your ``zope.conf`` like this::
         cache.regions           short, long
         cache.short.expire      60
         cache.long.expire       3600
-        
+
         session.type            file
         session.data_dir        /tmp/sessions/data
         session.lock_dir        /tmp/sessions/lock
@@ -76,7 +76,7 @@ If you are using buildout and ``plone.recipe.zope2instance`` to generate your
             cache.regions           short, long
             cache.short.expire      60
             cache.long.expire       3600
-        
+
             session.type            file
             session.data_dir        ${buildout:directory}/var/sessions/data
             session.lock_dir        ${buildout:directory}/var/sessions/lock
@@ -164,7 +164,7 @@ local utility to provide per-site session data.
 Using caching
 -------------
 
-The Beaker documentation illustrates how to create a cache manager as a 
+The Beaker documentation illustrates how to create a cache manager as a
 global variable. The ``CacheManager`` instance provides decorators and
 functions to use the cache. You can still use this pattern, but this will
 not use any of the configuration managed by ``collective.beaker`` in zope.conf
@@ -175,7 +175,7 @@ that is configured as per ``zope.conf`` like so::
 
     >>> from zope.component import getUtility
     >>> from collective.beaker.interfaces import ICacheManager
-    
+
     >>> cacheManager = getUtility(ICacheManager)
 
 You can now use this programmatically as per the Beaker documentation, e.g.::
@@ -227,14 +227,14 @@ any layer that executes ZCML processing. For example::
     from colective.beaker.testing import BeakerConfigLayer
     from Products.PloneTestCase.layer import PloneSiteLayer
     from Products.PloneTestCase.ptc import PloneTestCase
-    
+
     class MyLayer(BeakerConfigLayer, PloneSiteLayer):
         pass
-    
+
     class TestCase(PloneTestCase):
-        
+
         layer = MyLayer
-    
+
 You can of course add your own ``setUp`` and ``tearDown`` methods to the
 layer. The important thing is that the ``BeakerConfigLayer`` comes before
 the ``PloneSiteLayer``, which will configure the site.
@@ -244,7 +244,7 @@ values), but you can manipulate these on a per-setting basis. For example::
 
     from zope.component import getUtility
     from collective.beaker.interfaces import ISessionConfig
-    
+
     config = getUtility(ISessionConfig)
     config['secret'] = 'password'
 
@@ -261,44 +261,44 @@ listens to in order to configure the session.
 For example::
 
     from collective.beaker.session import initializeSession, closeSession
-    
+
     ...
-    
+
     class TestCase(PloneTestCase):
-        
+
         layer = MyLayer
-        
+
         def test_something(self):
             request = self.app.REQUEST
             initializeSession(request)
-            
+
             # perform your test here
-            
+
             closeSession(request)
 
 In a unit test, it is probably easier to just provide a mock ``ISession``
 adapter for the request. There is a mock session implementation in this
 package which can help you with that::
-    
+
     import unittest
     import zope.component.testing
-    
+
     from zope.component import provideAdapter
     from collective.beaker.testing import testingSession
-    
+
     from collective.beaker.interfaces import ISession
     from zope.publisher.browser import TestRequest
-    
-    
+
+
     class MyUnitTestCase(unittest.TestCase):
-        
+
         def setUp(self):
             provideAdapter(testingSession)
             ...
-        
+
         def tearDown(self):
             zope.component.testing.tearDown()
-        
+
         def test_something(self):
             request = TestRequest()
             session = ISession(request)
