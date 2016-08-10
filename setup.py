@@ -7,7 +7,7 @@ setup(name='collective.beaker',
       version=version,
       description="Beaker integration for Zope and Plone",
       long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+                       open("CHANGES.rst").read(),
       classifiers=[
         "Framework :: Plone",
         "Programming Language :: Python",
