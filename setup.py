@@ -17,7 +17,7 @@ setup(
     keywords='beaker zope plone caching sessions',
     author='Martin Aspeli',
     author_email='optilude@gmail.com',
-    url='https://pypi.python.org/pypi/collective.beaker',
+    url='https://github.com/collective/collective.beaker',
     license='BSD',
     packages=find_packages('src', exclude=['ez_setup']),
     package_dir = {'':'src'},
