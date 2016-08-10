@@ -7,8 +7,8 @@ setup(
     name='collective.beaker',
     version=version,
     description="Beaker integration for Zope and Plone",
-    long_description=open("README.rst").read() + "\n" +
-                     open("CHANGES.rst").read(),
+    long_description=(open("README.rst").read() + "\n" +
+                      open("CHANGES.rst").read()),
     classifiers=[
         "Framework :: Plone",
         "Programming Language :: Python",
@@ -20,7 +20,7 @@ setup(
     url='https://github.com/collective/collective.beaker',
     license='BSD',
     packages=find_packages('src', exclude=['ez_setup']),
-    package_dir = {'':'src'},
+    package_dir={'': 'src'},
     namespace_packages=['collective'],
     include_package_data=True,
     zip_safe=False,
@@ -33,9 +33,9 @@ setup(
         'zope.publisher',
     ],
     extras_require={
-      'Zope2.10': ['ZPublisherEventsBackport'],
-      'tests': ['Products.PloneTestCase', 'collective.testcaselayer']
+        'Zope2.10': ['ZPublisherEventsBackport'],
+        'tests': ['Products.PloneTestCase', 'collective.testcaselayer']
     },
     entry_points="""
     """,
-    )
+)

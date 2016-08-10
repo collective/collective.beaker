@@ -9,6 +9,7 @@ ENVIRON_KEY = 'beaker.session'
 # Session access
 #
 
+
 class ISession(IMapping):
     """Adapt the request to ISession to obtain a Beaker session. This
     interface describes the basic Beaker session type.
@@ -35,6 +36,7 @@ class ISession(IMapping):
     def invalidate():
         """Invalidate the session, giving a fresh one.
         """
+
 
 class ISessionConfig(IMapping):
     """Beaker session setting, registered as a utility.

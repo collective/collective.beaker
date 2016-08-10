@@ -31,6 +31,7 @@ ptc.setupPloneSite()
 
 # Views used to test session behavior
 
+
 class SessionTestView(BrowserView):
 
     def __call__(self):
@@ -50,9 +51,11 @@ class SessionTestView(BrowserView):
 # Module scope method used to test region behavior (note that region is not
 # yet defined)
 
+
 @cache_region('short')
 def cachedShort():
     return time.time()
+
 
 class CollectiveBeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
 
@@ -73,7 +76,9 @@ class CollectiveBeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
 
 # Make sure we load the beaker config layer first, otherwise we may not have
 # configuration by the time the beaker data is loaded
-Layer = CollectiveBeakerLayer([BeakerConfigLayer, collective.testcaselayer.ptc.ptc_layer])
+Layer = CollectiveBeakerLayer(
+    [BeakerConfigLayer, collective.testcaselayer.ptc.ptc_layer])
+
 
 class TestSession(ptc.FunctionalTestCase):
 
@@ -177,6 +182,7 @@ class TestSession(ptc.FunctionalTestCase):
         self.browser.open(self.url)
         self.assertEquals('-1', self.browser.contents)
 
+
 class TestCacheRegion(ptc.PloneTestCase):
 
     layer = Layer
@@ -212,6 +218,7 @@ class TestCacheRegion(ptc.PloneTestCase):
         self.assertEquals(1, v1)
         self.assertEquals(1, v2)
         self.assertEquals(2, v3)
+
 
 class TestTestSession(unittest.TestCase):
 
@@ -277,7 +284,7 @@ class TestTestSession(unittest.TestCase):
         session['foo'] = 'bar'
 
         self.failIf(session.last_accessed is None)
-        self.assertEquals(True  , session.accessed())
+        self.assertEquals(True, session.accessed())
 
     def test_accessed_get(self):
         provideAdapter(testingSession)
@@ -291,7 +298,7 @@ class TestTestSession(unittest.TestCase):
         session.get('foo')
 
         self.failIf(session.last_accessed is None)
-        self.assertEquals(True  , session.accessed())
+        self.assertEquals(True, session.accessed())
 
     def test_accessed_contains(self):
         provideAdapter(testingSession)
@@ -305,7 +312,7 @@ class TestTestSession(unittest.TestCase):
         'foo' in session
 
         self.failIf(session.last_accessed is None)
-        self.assertEquals(True  , session.accessed())
+        self.assertEquals(True, session.accessed())
 
     def test_accessed_setdefault(self):
         provideAdapter(testingSession)
@@ -319,7 +326,7 @@ class TestTestSession(unittest.TestCase):
         session.setdefault('foo', 'bar')
 
         self.failIf(session.last_accessed is None)
-        self.assertEquals(True  , session.accessed())
+        self.assertEquals(True, session.accessed())
 
     def test_get_del(self):
         provideAdapter(testingSession)
@@ -333,7 +340,8 @@ class TestTestSession(unittest.TestCase):
         self.failIf('foo' in session)
 
         self.failIf(session.last_accessed is None)
-        self.assertEquals(True  , session.accessed())
+        self.assertEquals(True, session.accessed())
+
 
 def test_suite():
     return unittest.defaultTestLoader.loadTestsFromName(__name__)

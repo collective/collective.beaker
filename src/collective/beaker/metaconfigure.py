@@ -12,20 +12,22 @@ from zope.component.zcml import handler
 
 # Default session options - copied from beaker.middleware
 defaultSessionConfig = dict(
-        invalidate_corrupt=True,
-        type=None,
-        data_dir=None,
-        key='beaker.session.id',
-        timeout=None,
-        secret=None,
-        log_file=None,
-    )
+    invalidate_corrupt=True,
+    type=None,
+    data_dir=None,
+    key='beaker.session.id',
+    timeout=None,
+    secret=None,
+    log_file=None,
+)
+
 
 class IBeakerConfiguration(Interface):
     """Configuration-less directive which is intended to be used once only.
     It looks up the product configuration in zope.conf and configures global
     components accordingly.
     """
+
 
 def beakerConfiguration(_context):
     """Read configuration from zope.conf and register components accordingly.
@@ -59,10 +61,10 @@ def beakerConfiguration(_context):
     if cacheConfig:
         cacheManager = CacheManager(**cacheConfig)
         _context.action(
-            discriminator = ('utility', ICacheManager, u""),
-            callable = handler,
-            args = ('registerUtility', cacheManager, ICacheManager, u""),
-            kw = dict(info=cacheConfig),
+            discriminator=('utility', ICacheManager, u""),
+            callable=handler,
+            args=('registerUtility', cacheManager, ICacheManager, u""),
+            kw=dict(info=cacheConfig),
         )
 
     # If we have session config, register these as an ISessionConfig
@@ -75,8 +77,9 @@ def beakerConfiguration(_context):
         sessionConfigWithDefaults.update(sessionConfig)
 
         _context.action(
-            discriminator = ('utility', ISessionConfig, u""),
-            callable = handler,
-            args = ('registerUtility', sessionConfigWithDefaults, ISessionConfig, u""),
-            kw = dict(info=sessionConfig),
+            discriminator=('utility', ISessionConfig, u""),
+            callable=handler,
+            args=('registerUtility', sessionConfigWithDefaults,
+                  ISessionConfig, u""),
+            kw=dict(info=sessionConfig),
         )

@@ -9,6 +9,7 @@ from zope.publisher.interfaces import IRequest
 from App.config import getConfiguration
 from collective.beaker.interfaces import ISession
 
+
 class BeakerConfigLayer(object):
     """This layer sets up beaker configuration as if it had been present
     in zope.conf. The configuration data is held in self.zconfigData
@@ -29,6 +30,7 @@ class BeakerConfigLayer(object):
     def setUp(self):
         cfg = getConfiguration()
         cfg.product_config = {'beaker': self.zconfigData}
+
 
 class TestSession(dict):
     """Fake session object that can be used for unit testing
@@ -87,6 +89,7 @@ class TestSession(dict):
         self._accessed = True
         self.last_accessed = datetime.datetime.now()
         super(TestSession, self).__delitem__(key)
+
 
 @implementer(ISession)
 @adapter(IRequest)
