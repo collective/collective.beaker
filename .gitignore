@@ -1,0 +1,8 @@
+*.egg
+*.egg-info
+*.mo
+*.pyc
+*.pyo
+*.eggs
+build
+dist
