@@ -4,6 +4,8 @@ Changelog for collective.beaker
 1.0b4 (unreleased)
 ------------------
 
+- Code cleanup: pep8, pyflakes, check-manifest.  [maurits]
+
 - Moved code to https://github.com/collective/collective.beaker
   [maurits]
 
