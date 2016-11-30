@@ -9,6 +9,10 @@ Changelog for collective.beaker
 - Moved code to https://github.com/collective/collective.beaker
   [maurits]
 
+- Fix issue where cookie values are urlencoded by Zope
+  but not decoded before passing to Beaker.
+  [davisagli]
+
 
 1.0b3 (2011-05-11)
 ------------------
