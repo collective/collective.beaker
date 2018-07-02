@@ -64,6 +64,10 @@ def closeSession(request):
                     args = dict([(k, v) for k, v in cookieObj.items() if v])
                     args.setdefault('path', session._path)
 
+                    if args.get('httponly'):
+                        args.pop('httponly')
+                        args['http_only'] = True
+
                     request.response.setCookie(key, value, **args)
 
 # Event handlers

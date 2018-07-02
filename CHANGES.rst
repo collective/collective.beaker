@@ -13,6 +13,9 @@ Changelog for collective.beaker
   but not decoded before passing to Beaker.
   [davisagli]
 
+- Translate HttpOnly cookie flag to correct spelling for Zope.
+  [davisagli]
+
 
 1.0b3 (2011-05-11)
 ------------------
