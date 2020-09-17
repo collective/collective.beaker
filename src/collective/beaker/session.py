@@ -6,6 +6,9 @@ from zope.publisher.interfaces.http import IHTTPRequest
 from ZPublisher.interfaces import IPubStart, IPubSuccess, IPubFailure
 from six.moves.urllib.parse import unquote
 
+import six
+
+
 @implementer(ISession)
 @adapter(IHTTPRequest)
 def ZopeSession(request):
@@ -40,8 +43,9 @@ def initializeSession(request, environ_key='beaker.session'):
     """
     options = queryUtility(ISessionConfig)
     if options is not None:
-        environ = unquote_cookie_values(request.environ)
-        session = SessionObject(environ, **options)
+        if six.PY2:
+            environ = unquote_cookie_values(request.environ)
+        session = SessionObject(request.environ, **options)
         request.environ[ENVIRON_KEY] = session
 
 
