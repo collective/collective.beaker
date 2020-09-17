@@ -4,8 +4,7 @@ from zope.component import adapter, queryUtility
 from zope.interface import implementer
 from zope.publisher.interfaces.http import IHTTPRequest
 from ZPublisher.interfaces import IPubStart, IPubSuccess, IPubFailure
-import urllib
-
+from six.moves.urllib.parse import unquote
 
 @implementer(ISession)
 @adapter(IHTTPRequest)
@@ -27,7 +26,7 @@ def unquote_cookie_values(environ):
         for part in cookie.split(';'):
             if '=' in part:
                 k, v = part.split('=', 1)
-                part = '{}={}'.format(k, urllib.unquote(v))
+                part = '{}={}'.format(k, unquote(v))
             parts.append(part)
         cookie = '; '.join(parts)
 
