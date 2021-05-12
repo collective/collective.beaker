@@ -32,10 +32,10 @@ class BeakerConfigLayer(object):
         cfg.product_config = {'beaker': self.zconfigData}
 
 
+@implementer(ISession)
 class TestSession(dict):
     """Fake session object that can be used for unit testing
     """
-    implements(ISession)
 
     id = 'test-session'
     last_accessed = None
