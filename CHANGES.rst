@@ -4,6 +4,12 @@ Changelog for collective.beaker
 1.0b4 (unreleased)
 ------------------
 
+- Try to avoid an error when connection with external backend is broken (e.g. memcached)
+  [mpeeters]
+
+- Use `implementer` instead of `implements`
+  [mpeeters]
+
 - Code cleanup: pep8, pyflakes, check-manifest.  [maurits]
 
 - Moved code to https://github.com/collective/collective.beaker

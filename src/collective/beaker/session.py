@@ -55,7 +55,12 @@ def closeSession(request):
     session = ISession(request, None)
     if session is not None:
         if session.accessed():
-            session.persist()
+            try:
+                session.persist()
+            except Exception:
+                # Sometimes connection may be broken (e.g. with memcached or redis)
+                # This allow to try a reconnection
+                session.persist()
             sessionInstructions = session.request
             if sessionInstructions.get('set_cookie', False):
                 if sessionInstructions['cookie_out']:
