@@ -2,7 +2,7 @@ collective.beaker - Beaker integration for Zope 2 and Plone.
 ============================================================
 
 This package provides a means to configure the `Beaker
-<http://beaker.groovie.org>`_ session management and caching framework for
+<https://beaker.readthedocs.io/en/latest/>`_ session management and caching framework for
 use within a Zope 2 (and Plone) environment.
 
 Ordinarily, Beaker is configured using WSGI middleware. However, Zope 2 does
@@ -103,7 +103,7 @@ by adding a ``zcml`` line like::
 
 The settings within the ``<product-config beaker>`` section are passed
 directly to Beaker. See the `Beaker configuration documentation
-<http://beaker.groovie.org/configuration.html>`_ for more details about the
+<https://beaker.readthedocs.io/en/latest/configuration.html>`_ for more details about the
 available options.
 
 Please note that:
@@ -130,7 +130,7 @@ To obtain a Beaker session from a request, use the following pattern::
     >>> session = ISession(request)
 
 See the `Beaker session documentation
-<http://beaker.groovie.org/sessions.html>`_ for details on the resultant
+<https://beaker.readthedocs.io/en/latest/sessions.html>`_ for details on the resultant
 session object. You can more or less treat it as a dictionary with string
 keys::
 
@@ -183,7 +183,7 @@ You can now use this programmatically as per the Beaker documentation, e.g.::
     >>> myCache = cacheManager.get_cache('mynamespace', expire=1800)
 
 Refer to the `Beaker caching documentation
-<http://beaker.groovie.org/caching.html>`_ for details.
+<https://beaker.readthedocs.io/en/latest/caching.html>`_ for details.
 
 You can also use caching region decorators, e.g. with::
 
