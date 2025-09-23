@@ -6,12 +6,6 @@
 
     <include file="meta.zcml" />
 
-    <!-- Zope 2.10 backport -->
-    <include
-        zcml:condition="not-installed ZPublisher.interfaces"
-        package="ZPublisherEventsBackport"
-        />
-
     <!-- Register the ISessionConfig and ICacheManager utilities as
          appropriate, depending on what is found in zope.conf
     -->
