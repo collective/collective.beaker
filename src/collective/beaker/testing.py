@@ -1,10 +1,14 @@
 from App.config import getConfiguration
 from collective.beaker.interfaces import ISession
+from plone.app.testing import FunctionalTesting
+from plone.app.testing import IntegrationTesting
+from plone.app.testing import PLONE_FIXTURE
+from plone.app.testing import PloneSandboxLayer
 from zope.component import adapter
 from zope.interface import implementer
-from zope.interface import implements
 from zope.publisher.interfaces import IRequest
 
+import collective.beaker
 import datetime
 
 
@@ -91,6 +95,33 @@ class TestSession(dict):
 @implementer(ISession)
 @adapter(IRequest)
 def testingSession(request):
-    return request._environ.setdefault(
-        "collective.beaker.testing.session", TestSession()
-    )
+    if hasattr(request, "environ"):
+        # TestRequest
+        return request.environ.setdefault(
+            "collective.beaker.testing.session", TestSession()
+        )
+    elif hasattr(request, "_environ"):
+        # HTTPRequest
+        return request._environ.setdefault(
+            "collective.beaker.testing.session", TestSession()
+        )
+
+
+class CollectiveBeakerLayer(PloneSandboxLayer):
+
+    defaultBases = (PLONE_FIXTURE,)
+
+    def setUpZope(self, app, configurationContext):
+        BeakerConfigLayer.setUp()
+        self.loadZCML(package=collective.beaker, name="testing.zcml")
+
+
+BEAKER_FIXTURE = CollectiveBeakerLayer()
+BEAKER_INTEGRATION_TESTING = IntegrationTesting(
+    bases=(BEAKER_FIXTURE,),
+    name="CollectiveBeakerLayer:Integration",
+)
+BEAKER_FUNCTIONAL_TESTING = FunctionalTesting(
+    bases=(BEAKER_FIXTURE,),
+    name="CollectiveBeakerLayer:Functional",
+)
