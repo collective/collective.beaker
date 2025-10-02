@@ -1,21 +1,19 @@
 from App.config import getConfiguration
-
-from zope.interface import Interface
 from beaker.cache import CacheManager
-
-from beaker.util import parse_cache_config_options
 from beaker.util import coerce_session_params
-
-from collective.beaker.interfaces import ISessionConfig, ICacheManager
-
+from beaker.util import parse_cache_config_options
+from collective.beaker.interfaces import ICacheManager
+from collective.beaker.interfaces import ISessionConfig
 from zope.component.zcml import handler
+from zope.interface import Interface
+
 
 # Default session options - copied from beaker.middleware
 defaultSessionConfig = dict(
     invalidate_corrupt=True,
     type=None,
     data_dir=None,
-    key='beaker.session.id',
+    key="beaker.session.id",
     timeout=None,
     secret=None,
     log_file=None,
@@ -39,10 +37,10 @@ def beakerConfiguration(_context):
     """
     cfg = getConfiguration()
 
-    if not hasattr(cfg, 'product_config'):
+    if not hasattr(cfg, "product_config"):
         return
 
-    beakerConfig = cfg.product_config.get('beaker', {})
+    beakerConfig = cfg.product_config.get("beaker", {})
 
     if not beakerConfig:
         return
@@ -51,9 +49,9 @@ def beakerConfiguration(_context):
 
     sessionConfig = {}
     for key, value in beakerConfig.items():
-        if key.startswith('session.'):
+        if key.startswith("session."):
             sessionConfig[key[8:]] = value
-        elif key.startswith('beaker.session.'):
+        elif key.startswith("beaker.session."):
             sessionConfig[key[15:]] = value
     coerce_session_params(sessionConfig)
 
@@ -61,9 +59,9 @@ def beakerConfiguration(_context):
     if cacheConfig:
         cacheManager = CacheManager(**cacheConfig)
         _context.action(
-            discriminator=('utility', ICacheManager, u""),
+            discriminator=("utility", ICacheManager, u""),
             callable=handler,
-            args=('registerUtility', cacheManager, ICacheManager, u""),
+            args=("registerUtility", cacheManager, ICacheManager, u""),
             kw=dict(info=cacheConfig),
         )
 
@@ -77,9 +75,8 @@ def beakerConfiguration(_context):
         sessionConfigWithDefaults.update(sessionConfig)
 
         _context.action(
-            discriminator=('utility', ISessionConfig, u""),
+            discriminator=("utility", ISessionConfig, u""),
             callable=handler,
-            args=('registerUtility', sessionConfigWithDefaults,
-                  ISessionConfig, u""),
+            args=("registerUtility", sessionConfigWithDefaults, ISessionConfig, u""),
             kw=dict(info=sessionConfig),
         )

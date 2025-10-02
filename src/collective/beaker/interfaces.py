@@ -1,9 +1,10 @@
+from zope import schema
 from zope.interface import Interface
 from zope.interface.common.mapping import IMapping
-from zope import schema
+
 
 # Key in request.environ used to store the beaker session
-ENVIRON_KEY = 'beaker.session'
+ENVIRON_KEY = "beaker.session"
 
 #
 # Session access
@@ -30,12 +31,10 @@ class ISession(IMapping):
         """
 
     def delete():
-        """Mark the session for deletion.
-        """
+        """Mark the session for deletion."""
 
     def invalidate():
-        """Invalidate the session, giving a fresh one.
-        """
+        """Invalidate the session, giving a fresh one."""
 
 
 class ISessionConfig(IMapping):
@@ -49,6 +48,7 @@ class ISessionConfig(IMapping):
 #
 # Cache manager
 #
+
 
 class ICacheManager(Interface):
     """A Beaker cache manager.
