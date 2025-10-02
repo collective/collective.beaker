@@ -1,0 +1,15 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    package="collective.beaker">
+
+  <include package="collective.beaker" file="configure.zcml" />
+
+  <browser:view
+      name="session-test"
+      for="*"
+      class=".tests.SessionTestView"
+      permission="zope2.View"
+      />
+
+</configure>

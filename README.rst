@@ -17,7 +17,7 @@ via the ``install_requires`` line in your own package's ``setup.py``::
 
     install_requires=[
           ...
-          'collective.beaker',
+          "collective.beaker",
       ],
 
 You can also install it using the ``eggs`` line in buildout.cfg, e.g.::
@@ -27,21 +27,6 @@ You can also install it using the ``eggs`` line in buildout.cfg, e.g.::
     eggs =
         ...
         collective.beaker
-
-If you are on Zope 2.10 (e.g. for Plone 3), you will also need to install the
-`ZPublisherEventsBackport
-<http://pypi.python.org/pypi/ZPublisherEventsBackport>`_ package. You can
-get that as a dependency by depending in the ``[Zope2.10]`` extra, e.g.::
-
-    [instance]
-    ...
-    eggs =
-        ...
-        collective.beaker [Zope2.10]
-
-If you are in Zope 2.12 or later, the relevant events are included by default,
-and you should *not* depend on ``ZPublisherEventsBackport`` or the
-``[Zope2.10]`` extra.
 
 Configuring Beaker
 ------------------
@@ -134,7 +119,7 @@ See the `Beaker session documentation
 session object. You can more or less treat it as a dictionary with string
 keys::
 
-    >>> session['username'] = currentUserName
+    >>> session["username"] = currentUserName
 
 If you modify the session, you need to manually save it::
 
@@ -180,7 +165,7 @@ that is configured as per ``zope.conf`` like so::
 
 You can now use this programmatically as per the Beaker documentation, e.g.::
 
-    >>> myCache = cacheManager.get_cache('mynamespace', expire=1800)
+    >>> myCache = cacheManager.get_cache("mynamespace", expire=1800)
 
 Refer to the `Beaker caching documentation
 <https://beaker.readthedocs.io/en/latest/caching.html>`_ for details.
@@ -188,7 +173,7 @@ Refer to the `Beaker caching documentation
 You can also use caching region decorators, e.g. with::
 
     >>> from beaker.cache import cache_region
-    >>> @cache_region('short')
+    >>> @cache_region("short")
     ... def my_function():
     ...     ...
 
@@ -199,7 +184,7 @@ for caching.
 To invalidate the cache, you could call::
 
     >>> from beaker.cache import region_invalidate
-    >>> region_invalidate(my_function, 'short')
+    >>> region_invalidate(my_function, "short")
 
 Again, refer to the Beaker documentation for details.
 
@@ -210,9 +195,8 @@ If you are writing integration tests for code that uses beaker sessions or
 caches, you need to ensure that beaker is configured before you call the
 relevant code. Otherwise, you are liable to get component lookup errors
 on ``ISessionConfig`` or ``ICacheManager`` layers. This is because integration
-tests written with ``ZopeTestCase``/``PloneTestCase`` do not read your
-``zope.conf`` and so the ``collective.beaker`` configuration code does not
-have any configuration data when it is loaded.
+tests do not read your ``zope.conf`` and so the ``collective.beaker``
+configuration code does not have any configuration data when it is loaded.
 
 You can deal with this in one of two ways:
 
@@ -220,24 +204,26 @@ You can deal with this in one of two ways:
   See ``interfaces.py`` for details.
 * Provide "fake" ZConfig settings before ZCML processing takes place.
 
-You can use the test layer in ``collective.beaker.testing.BeakerConfigLayer``
-to do the latter. You need to make sure that this layer is mixed in before
-any layer that executes ZCML processing. For example::
+You can use the test fixture in ``collective.beaker.testing.BEAKER_FIXTURE``
+to do the latter. For example::
 
-    from colective.beaker.testing import BeakerConfigLayer
-    from Products.PloneTestCase.layer import PloneSiteLayer
-    from Products.PloneTestCase.ptc import PloneTestCase
+    from collective.beaker.interfaces import ISession
+    from collective.beaker.testing import testingSession
+    from collective.beaker.testing import BEAKER_FIXTURE
+    from plone.app.testing import PloneSandboxLayer
+    from zope.component import provideAdapter
+    from zope.publisher.interfaces.http import IHTTPRequest
 
-    class MyLayer(BeakerConfigLayer, PloneSiteLayer):
-        pass
+    class MyLayer(PloneSandboxLayer):
 
-    class TestCase(PloneTestCase):
+        defaultBases = (BEAKER_FIXTURE,)
 
-        layer = MyLayer
+        def setUpZope(self, app, configurationContext):
+            self.loadZCML(package=my.package)
+            provideAdapter(testingSession, (IHTTPRequest,), ISession)
 
-You can of course add your own ``setUp`` and ``tearDown`` methods to the
-layer. The important thing is that the ``BeakerConfigLayer`` comes before
-the ``PloneSiteLayer``, which will configure the site.
+The ``provideAdapter`` here is optional, in case you deal with ``HTTPRequest``
+instead of ``TestRequest`` in your tests.
 
 This setup will use default settings (see ``testing.py`` for the exact
 values), but you can manipulate these on a per-setting basis. For example::
@@ -246,7 +232,7 @@ values), but you can manipulate these on a per-setting basis. For example::
     from collective.beaker.interfaces import ISessionConfig
 
     config = getUtility(ISessionConfig)
-    config['secret'] = 'password'
+    config["secret"] = "password"
 
 Bear in mind that this is normally a global utility, so any changes will
 cross test boundaries unless you also tear down your settings properly. Thus,
@@ -264,9 +250,9 @@ For example::
 
     ...
 
-    class TestCase(PloneTestCase):
+    class TestCase(unittest.TestCase):
 
-        layer = MyLayer
+        layer = MY_LAYER
 
         def test_something(self):
             request = self.app.REQUEST

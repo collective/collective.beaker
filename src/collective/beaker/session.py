@@ -2,7 +2,6 @@ from beaker.session import SessionObject
 from collective.beaker.interfaces import ENVIRON_KEY
 from collective.beaker.interfaces import ISession
 from collective.beaker.interfaces import ISessionConfig
-from six.moves.urllib.parse import unquote
 from zope.component import adapter
 from zope.component import queryUtility
 from zope.interface import implementer
@@ -10,8 +9,6 @@ from zope.publisher.interfaces.http import IHTTPRequest
 from ZPublisher.interfaces import IPubFailure
 from ZPublisher.interfaces import IPubStart
 from ZPublisher.interfaces import IPubSuccess
-
-import six
 
 
 @implementer(ISession)
@@ -24,31 +21,10 @@ def ZopeSession(request):
 # Helper functions
 
 
-def unquote_cookie_values(environ):
-    # Zope "helpfully" urlencodes cookie values,
-    # but Beaker needs the unencoded value
-    if "HTTP_COOKIE" in environ:
-        cookie = environ["HTTP_COOKIE"]
-
-        parts = []
-        for part in cookie.split(";"):
-            if "=" in part:
-                k, v = part.split("=", 1)
-                part = "{}={}".format(k, unquote(v))
-            parts.append(part)
-        cookie = "; ".join(parts)
-
-        environ = environ.copy()
-        environ["HTTP_COOKIE"] = cookie
-    return environ
-
-
 def initializeSession(request, environ_key="beaker.session"):
     """Create a new session and store it in the request."""
     options = queryUtility(ISessionConfig)
     if options is not None:
-        if six.PY2:
-            environ = unquote_cookie_values(request.environ)
         session = SessionObject(request.environ, **options)
         request.environ[ENVIRON_KEY] = session
 

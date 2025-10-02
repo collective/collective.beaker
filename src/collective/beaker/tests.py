@@ -2,25 +2,19 @@ from beaker.cache import cache_region
 from collective.beaker.interfaces import ICacheManager
 from collective.beaker.interfaces import ISession
 from collective.beaker.interfaces import ISessionConfig
-from collective.beaker.testing import BeakerConfigLayer
+from collective.beaker.testing import BEAKER_FUNCTIONAL_TESTING
+from collective.beaker.testing import BEAKER_INTEGRATION_TESTING
 from collective.beaker.testing import testingSession
-from Products.Five import fiveconfigure
-from Products.Five import zcml
-from Products.Five.browser import BrowserView
-from Products.Five.testbrowser import Browser
-from Products.PloneTestCase import ptc
+from plone.testing.z2 import Browser
 from zope.component import getUtility
 from zope.component import provideAdapter
+from zope.publisher.browser import BrowserView
 from zope.publisher.browser import TestRequest
 
-import collective.beaker
-import collective.testcaselayer.ptc
 import time
 import unittest
 import zope.component.testing
 
-
-ptc.setupPloneSite()
 
 # Views used to test session behavior
 
@@ -50,152 +44,119 @@ def cachedShort():
     return time.time()
 
 
-class CollectiveBeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
-    def afterSetUp(self):
-        fiveconfigure.debug_mode = True
+class TestSession(unittest.TestCase):
 
-        zcml.load_config("configure.zcml", package=collective.beaker)
-        zcml.load_string(
-            """\
-        <configure package="collective.beaker"
-            xmlns="http://namespaces.zope.org/browser">
-            <view
-                name="session-test"
-                for="*"
-                class=".tests.SessionTestView"
-                permission="zope2.View"
-                />
-        </configure>"""
-        )
-        fiveconfigure.debug_mode = False
+    layer = BEAKER_FUNCTIONAL_TESTING
 
-
-# Make sure we load the beaker config layer first, otherwise we may not have
-# configuration by the time the beaker data is loaded
-Layer = CollectiveBeakerLayer(
-    [BeakerConfigLayer, collective.testcaselayer.ptc.ptc_layer]
-)
-
-
-class TestSession(ptc.FunctionalTestCase):
-
-    layer = Layer
-
-    def afterSetUp(self):
-        self.browser = Browser()
+    def setUp(self):
+        self.app = self.layer["app"]
+        self.portal = self.layer["portal"]
+        self.browser = Browser(self.app)
         self.browser.handleErrors = False
         self.url = self.portal.absolute_url() + "/@@session-test?"
 
     def test_create_persist(self):
-
         self.browser.open(self.url)
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
 
         self.browser.open(self.url + "reset")
-        self.assertEquals("0", self.browser.contents)
+        self.assertEqual("0", self.browser.contents)
 
         self.browser.open(self.url + "increment")
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
 
         self.browser.open(self.url + "increment")
-        self.assertEquals("2", self.browser.contents)
+        self.assertEqual("2", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals("2", self.browser.contents)
+        self.assertEqual("2", self.browser.contents)
 
     def test_create_persist_signed_cookie(self):
-
         config = getUtility(ISessionConfig)
         config["secret"] = "password"
-
         try:
-
             self.browser.open(self.url)
-            self.assertEquals("-1", self.browser.contents)
+            self.assertEqual("-1", self.browser.contents)
 
             self.browser.open(self.url + "reset")
-            self.assertEquals("0", self.browser.contents)
+            self.assertEqual("0", self.browser.contents)
 
             self.browser.open(self.url + "increment")
-            self.assertEquals("1", self.browser.contents)
+            self.assertEqual("1", self.browser.contents)
             self.browser.open(self.url)
-            self.assertEquals("1", self.browser.contents)
+            self.assertEqual("1", self.browser.contents)
 
             self.browser.open(self.url + "increment")
-            self.assertEquals("2", self.browser.contents)
+            self.assertEqual("2", self.browser.contents)
             self.browser.open(self.url)
-            self.assertEquals("2", self.browser.contents)
-
+            self.assertEqual("2", self.browser.contents)
         finally:
             del config["secret"]
 
     def test_invalidate(self):
         self.browser.open(self.url)
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
 
         self.browser.open(self.url + "reset")
-        self.assertEquals("0", self.browser.contents)
+        self.assertEqual("0", self.browser.contents)
 
         self.browser.open(self.url + "increment")
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
 
         self.browser.open(self.url + "invalidate")
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
 
         self.browser.open(self.url + "reset")
-        self.assertEquals("0", self.browser.contents)
+        self.assertEqual("0", self.browser.contents)
 
         self.browser.open(self.url + "increment")
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
 
     def test_delete(self):
         self.browser.open(self.url)
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
 
         self.browser.open(self.url + "reset")
-        self.assertEquals("0", self.browser.contents)
+        self.assertEqual("0", self.browser.contents)
 
         self.browser.open(self.url + "increment")
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals("1", self.browser.contents)
+        self.assertEqual("1", self.browser.contents)
 
         self.browser.open(self.url + "delete")
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
 
         # XXX: We should test that the cookie has expired now, except
         # that zope.testbrowser does not correctly expire cookies :(
 
         self.browser.open(self.url)
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
 
         self.browser.open(self.url)
-        self.assertEquals("-1", self.browser.contents)
+        self.assertEqual("-1", self.browser.contents)
 
 
-class TestCacheRegion(ptc.PloneTestCase):
+class TestCacheRegion(unittest.TestCase):
 
-    layer = Layer
+    layer = BEAKER_INTEGRATION_TESTING
 
     def test_region_cache(self):
         t1 = cachedShort()
         time.sleep(1)
-
-        self.assertEquals(t1, cachedShort())
-
+        self.assertEqual(t1, cachedShort())
         # let cache expire
         time.sleep(3)
-        self.assertNotEquals(t1, cachedShort())
+        self.assertNotEqual(t1, cachedShort())
 
     def test_cache_lookup(self):
-
         cacheManager = getUtility(ICacheManager)
         cache = cacheManager.get_cache("foo", expire=3)
 
@@ -212,9 +173,9 @@ class TestCacheRegion(ptc.PloneTestCase):
 
         v3 = cache.get(key="bar", createfunc=increment)
 
-        self.assertEquals(1, v1)
-        self.assertEquals(1, v2)
-        self.assertEquals(2, v3)
+        self.assertEqual(1, v1)
+        self.assertEqual(1, v2)
+        self.assertEqual(2, v3)
 
 
 class TestTestSession(unittest.TestCase):
@@ -223,7 +184,7 @@ class TestTestSession(unittest.TestCase):
 
     def test_test_session_not_registered(self):
         request = TestRequest()
-        self.assertEquals(None, ISession(request, None))
+        self.assertEqual(None, ISession(request, None))
 
     def test_test_session_unique_to_request(self):
         provideAdapter(testingSession)
@@ -235,8 +196,8 @@ class TestTestSession(unittest.TestCase):
         session2 = ISession(request2)
 
         session1["foo"] = "bar"
-        self.assertEquals("bar", session1["foo"])
-        self.failIf("foo" in session2)
+        self.assertEqual("bar", session1["foo"])
+        self.assertFalse("foo" in session2)
 
     def test_saved(self):
         provideAdapter(testingSession)
@@ -244,9 +205,9 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
 
-        self.assertEquals(False, session._saved)
+        self.assertEqual(False, session._saved)
         session.save()
-        self.assertEquals(True, session._saved)
+        self.assertEqual(True, session._saved)
 
     def test_deleted(self):
         provideAdapter(testingSession)
@@ -254,9 +215,9 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
 
-        self.assertEquals(False, session._deleted)
+        self.assertEqual(False, session._deleted)
         session.delete()
-        self.assertEquals(True, session._deleted)
+        self.assertEqual(True, session._deleted)
 
     def test_invalidated(self):
         provideAdapter(testingSession)
@@ -264,9 +225,9 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
 
-        self.assertEquals(False, session._invalidated)
+        self.assertEqual(False, session._invalidated)
         session.invalidate()
-        self.assertEquals(True, session._invalidated)
+        self.assertEqual(True, session._invalidated)
 
     def test_accessed_setitem(self):
         provideAdapter(testingSession)
@@ -274,13 +235,13 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
 
-        self.assertEquals(None, session.last_accessed)
-        self.assertEquals(False, session.accessed())
+        self.assertEqual(None, session.last_accessed)
+        self.assertEqual(False, session.accessed())
 
         session["foo"] = "bar"
 
-        self.failIf(session.last_accessed is None)
-        self.assertEquals(True, session.accessed())
+        self.assertFalse(session.last_accessed is None)
+        self.assertEqual(True, session.accessed())
 
     def test_accessed_get(self):
         provideAdapter(testingSession)
@@ -288,13 +249,13 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
 
-        self.assertEquals(None, session.last_accessed)
-        self.assertEquals(False, session.accessed())
+        self.assertEqual(None, session.last_accessed)
+        self.assertEqual(False, session.accessed())
 
         session.get("foo")
 
-        self.failIf(session.last_accessed is None)
-        self.assertEquals(True, session.accessed())
+        self.assertFalse(session.last_accessed is None)
+        self.assertEqual(True, session.accessed())
 
     def test_accessed_contains(self):
         provideAdapter(testingSession)
@@ -302,13 +263,13 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
 
-        self.assertEquals(None, session.last_accessed)
-        self.assertEquals(False, session.accessed())
+        self.assertEqual(None, session.last_accessed)
+        self.assertEqual(False, session.accessed())
 
         "foo" in session
 
-        self.failIf(session.last_accessed is None)
-        self.assertEquals(True, session.accessed())
+        self.assertFalse(session.last_accessed is None)
+        self.assertEqual(True, session.accessed())
 
     def test_accessed_setdefault(self):
         provideAdapter(testingSession)
@@ -316,13 +277,13 @@ class TestTestSession(unittest.TestCase):
         request = TestRequest()
         session = ISession(request)
 
-        self.assertEquals(None, session.last_accessed)
-        self.assertEquals(False, session.accessed())
+        self.assertEqual(None, session.last_accessed)
+        self.assertEqual(False, session.accessed())
 
         session.setdefault("foo", "bar")
 
-        self.failIf(session.last_accessed is None)
-        self.assertEquals(True, session.accessed())
+        self.assertFalse(session.last_accessed is None)
+        self.assertEqual(True, session.accessed())
 
     def test_get_del(self):
         provideAdapter(testingSession)
@@ -331,13 +292,9 @@ class TestTestSession(unittest.TestCase):
         session = ISession(request)
         session["foo"] = "bar"
 
-        self.assertEquals("bar", session["foo"])
+        self.assertEqual("bar", session["foo"])
         del session["foo"]
-        self.failIf("foo" in session)
+        self.assertFalse("foo" in session)
 
-        self.failIf(session.last_accessed is None)
-        self.assertEquals(True, session.accessed())
-
-
-def test_suite():
-    return unittest.defaultTestLoader.loadTestsFromName(__name__)
+        self.assertFalse(session.last_accessed is None)
+        self.assertEqual(True, session.accessed())
