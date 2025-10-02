@@ -1,31 +1,24 @@
-
-import time
-import unittest
-
-import zope.component.testing
-from zope.component import provideAdapter
-
-from zope.publisher.browser import TestRequest
-
-import collective.testcaselayer.ptc
-import collective.beaker
-
-from Products.PloneTestCase import ptc
-from Products.Five.testbrowser import Browser
-from Products.Five.browser import BrowserView
-from Products.Five import fiveconfigure
-from Products.Five import zcml
-
-from zope.component import getUtility
-
-from collective.beaker.interfaces import ISession
-from collective.beaker.interfaces import ICacheManager
-from collective.beaker.interfaces import ISessionConfig
-
 from beaker.cache import cache_region
-
+from collective.beaker.interfaces import ICacheManager
+from collective.beaker.interfaces import ISession
+from collective.beaker.interfaces import ISessionConfig
 from collective.beaker.testing import BeakerConfigLayer
 from collective.beaker.testing import testingSession
+from Products.Five import fiveconfigure
+from Products.Five import zcml
+from Products.Five.browser import BrowserView
+from Products.Five.testbrowser import Browser
+from Products.PloneTestCase import ptc
+from zope.component import getUtility
+from zope.component import provideAdapter
+from zope.publisher.browser import TestRequest
+
+import collective.beaker
+import collective.testcaselayer.ptc
+import time
+import unittest
+import zope.component.testing
+
 
 ptc.setupPloneSite()
 
@@ -33,37 +26,37 @@ ptc.setupPloneSite()
 
 
 class SessionTestView(BrowserView):
-
     def __call__(self):
         session = ISession(self.request)
-        if 'reset' in self.request:
-            session['testCounter'] = 0
+        if "reset" in self.request:
+            session["testCounter"] = 0
             session.save()
-        if 'increment' in self.request:
-            session['testCounter'] += 1
+        if "increment" in self.request:
+            session["testCounter"] += 1
             session.save()
-        if 'invalidate' in self.request:
+        if "invalidate" in self.request:
             session.invalidate()
-        if 'delete' in self.request:
+        if "delete" in self.request:
             session.delete()
-        return str(session.get('testCounter', -1))
+        return str(session.get("testCounter", -1))
+
 
 # Module scope method used to test region behavior (note that region is not
 # yet defined)
 
 
-@cache_region('short')
+@cache_region("short")
 def cachedShort():
     return time.time()
 
 
 class CollectiveBeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
-
     def afterSetUp(self):
         fiveconfigure.debug_mode = True
 
-        zcml.load_config('configure.zcml', package=collective.beaker)
-        zcml.load_string("""\
+        zcml.load_config("configure.zcml", package=collective.beaker)
+        zcml.load_string(
+            """\
         <configure package="collective.beaker"
             xmlns="http://namespaces.zope.org/browser">
             <view
@@ -72,13 +65,16 @@ class CollectiveBeakerLayer(collective.testcaselayer.ptc.BasePTCLayer):
                 class=".tests.SessionTestView"
                 permission="zope2.View"
                 />
-        </configure>""")
+        </configure>"""
+        )
         fiveconfigure.debug_mode = False
+
 
 # Make sure we load the beaker config layer first, otherwise we may not have
 # configuration by the time the beaker data is loaded
 Layer = CollectiveBeakerLayer(
-    [BeakerConfigLayer, collective.testcaselayer.ptc.ptc_layer])
+    [BeakerConfigLayer, collective.testcaselayer.ptc.ptc_layer]
+)
 
 
 class TestSession(ptc.FunctionalTestCase):
@@ -88,100 +84,100 @@ class TestSession(ptc.FunctionalTestCase):
     def afterSetUp(self):
         self.browser = Browser()
         self.browser.handleErrors = False
-        self.url = self.portal.absolute_url() + '/@@session-test?'
+        self.url = self.portal.absolute_url() + "/@@session-test?"
 
     def test_create_persist(self):
 
         self.browser.open(self.url)
-        self.assertEquals('-1', self.browser.contents)
+        self.assertEquals("-1", self.browser.contents)
 
-        self.browser.open(self.url + 'reset')
-        self.assertEquals('0', self.browser.contents)
+        self.browser.open(self.url + "reset")
+        self.assertEquals("0", self.browser.contents)
 
-        self.browser.open(self.url + 'increment')
-        self.assertEquals('1', self.browser.contents)
+        self.browser.open(self.url + "increment")
+        self.assertEquals("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals('1', self.browser.contents)
+        self.assertEquals("1", self.browser.contents)
 
-        self.browser.open(self.url + 'increment')
-        self.assertEquals('2', self.browser.contents)
+        self.browser.open(self.url + "increment")
+        self.assertEquals("2", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals('2', self.browser.contents)
+        self.assertEquals("2", self.browser.contents)
 
     def test_create_persist_signed_cookie(self):
 
         config = getUtility(ISessionConfig)
-        config['secret'] = 'password'
+        config["secret"] = "password"
 
         try:
 
             self.browser.open(self.url)
-            self.assertEquals('-1', self.browser.contents)
+            self.assertEquals("-1", self.browser.contents)
 
-            self.browser.open(self.url + 'reset')
-            self.assertEquals('0', self.browser.contents)
+            self.browser.open(self.url + "reset")
+            self.assertEquals("0", self.browser.contents)
 
-            self.browser.open(self.url + 'increment')
-            self.assertEquals('1', self.browser.contents)
+            self.browser.open(self.url + "increment")
+            self.assertEquals("1", self.browser.contents)
             self.browser.open(self.url)
-            self.assertEquals('1', self.browser.contents)
+            self.assertEquals("1", self.browser.contents)
 
-            self.browser.open(self.url + 'increment')
-            self.assertEquals('2', self.browser.contents)
+            self.browser.open(self.url + "increment")
+            self.assertEquals("2", self.browser.contents)
             self.browser.open(self.url)
-            self.assertEquals('2', self.browser.contents)
+            self.assertEquals("2", self.browser.contents)
 
         finally:
-            del config['secret']
+            del config["secret"]
 
     def test_invalidate(self):
         self.browser.open(self.url)
-        self.assertEquals('-1', self.browser.contents)
+        self.assertEquals("-1", self.browser.contents)
 
-        self.browser.open(self.url + 'reset')
-        self.assertEquals('0', self.browser.contents)
+        self.browser.open(self.url + "reset")
+        self.assertEquals("0", self.browser.contents)
 
-        self.browser.open(self.url + 'increment')
-        self.assertEquals('1', self.browser.contents)
+        self.browser.open(self.url + "increment")
+        self.assertEquals("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals('1', self.browser.contents)
+        self.assertEquals("1", self.browser.contents)
 
-        self.browser.open(self.url + 'invalidate')
-        self.assertEquals('-1', self.browser.contents)
+        self.browser.open(self.url + "invalidate")
+        self.assertEquals("-1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals('-1', self.browser.contents)
+        self.assertEquals("-1", self.browser.contents)
 
-        self.browser.open(self.url + 'reset')
-        self.assertEquals('0', self.browser.contents)
+        self.browser.open(self.url + "reset")
+        self.assertEquals("0", self.browser.contents)
 
-        self.browser.open(self.url + 'increment')
-        self.assertEquals('1', self.browser.contents)
+        self.browser.open(self.url + "increment")
+        self.assertEquals("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals('1', self.browser.contents)
+        self.assertEquals("1", self.browser.contents)
 
     def test_delete(self):
         self.browser.open(self.url)
-        self.assertEquals('-1', self.browser.contents)
+        self.assertEquals("-1", self.browser.contents)
 
-        self.browser.open(self.url + 'reset')
-        self.assertEquals('0', self.browser.contents)
+        self.browser.open(self.url + "reset")
+        self.assertEquals("0", self.browser.contents)
 
-        self.browser.open(self.url + 'increment')
-        self.assertEquals('1', self.browser.contents)
+        self.browser.open(self.url + "increment")
+        self.assertEquals("1", self.browser.contents)
         self.browser.open(self.url)
-        self.assertEquals('1', self.browser.contents)
+        self.assertEquals("1", self.browser.contents)
 
-        self.browser.open(self.url + 'delete')
-        self.assertEquals('-1', self.browser.contents)
+        self.browser.open(self.url + "delete")
+        self.assertEquals("-1", self.browser.contents)
 
         # XXX: We should test that the cookie has expired now, except
         # that zope.testbrowser does not correctly expire cookies :(
 
         self.browser.open(self.url)
-        self.assertEquals('-1', self.browser.contents)
+        self.assertEquals("-1", self.browser.contents)
 
         self.browser.open(self.url)
-        self.assertEquals('-1', self.browser.contents)
+        self.assertEquals("-1", self.browser.contents)
 
 
 class TestCacheRegion(ptc.PloneTestCase):
@@ -201,7 +197,7 @@ class TestCacheRegion(ptc.PloneTestCase):
     def test_cache_lookup(self):
 
         cacheManager = getUtility(ICacheManager)
-        cache = cacheManager.get_cache('foo', expire=3)
+        cache = cacheManager.get_cache("foo", expire=3)
 
         counter = [0]
 
@@ -209,12 +205,12 @@ class TestCacheRegion(ptc.PloneTestCase):
             counter[0] += 1
             return counter[0]
 
-        v1 = cache.get(key='bar', createfunc=increment)
-        v2 = cache.get(key='bar', createfunc=increment)
+        v1 = cache.get(key="bar", createfunc=increment)
+        v2 = cache.get(key="bar", createfunc=increment)
 
         time.sleep(4)
 
-        v3 = cache.get(key='bar', createfunc=increment)
+        v3 = cache.get(key="bar", createfunc=increment)
 
         self.assertEquals(1, v1)
         self.assertEquals(1, v2)
@@ -222,7 +218,6 @@ class TestCacheRegion(ptc.PloneTestCase):
 
 
 class TestTestSession(unittest.TestCase):
-
     def tearDown(self):
         zope.component.testing.tearDown()
 
@@ -239,9 +234,9 @@ class TestTestSession(unittest.TestCase):
         session1 = ISession(request1)
         session2 = ISession(request2)
 
-        session1['foo'] = 'bar'
-        self.assertEquals('bar', session1['foo'])
-        self.failIf('foo' in session2)
+        session1["foo"] = "bar"
+        self.assertEquals("bar", session1["foo"])
+        self.failIf("foo" in session2)
 
     def test_saved(self):
         provideAdapter(testingSession)
@@ -282,7 +277,7 @@ class TestTestSession(unittest.TestCase):
         self.assertEquals(None, session.last_accessed)
         self.assertEquals(False, session.accessed())
 
-        session['foo'] = 'bar'
+        session["foo"] = "bar"
 
         self.failIf(session.last_accessed is None)
         self.assertEquals(True, session.accessed())
@@ -296,7 +291,7 @@ class TestTestSession(unittest.TestCase):
         self.assertEquals(None, session.last_accessed)
         self.assertEquals(False, session.accessed())
 
-        session.get('foo')
+        session.get("foo")
 
         self.failIf(session.last_accessed is None)
         self.assertEquals(True, session.accessed())
@@ -310,7 +305,7 @@ class TestTestSession(unittest.TestCase):
         self.assertEquals(None, session.last_accessed)
         self.assertEquals(False, session.accessed())
 
-        'foo' in session
+        "foo" in session
 
         self.failIf(session.last_accessed is None)
         self.assertEquals(True, session.accessed())
@@ -324,7 +319,7 @@ class TestTestSession(unittest.TestCase):
         self.assertEquals(None, session.last_accessed)
         self.assertEquals(False, session.accessed())
 
-        session.setdefault('foo', 'bar')
+        session.setdefault("foo", "bar")
 
         self.failIf(session.last_accessed is None)
         self.assertEquals(True, session.accessed())
@@ -334,11 +329,11 @@ class TestTestSession(unittest.TestCase):
 
         request = TestRequest()
         session = ISession(request)
-        session['foo'] = 'bar'
+        session["foo"] = "bar"
 
-        self.assertEquals('bar', session['foo'])
-        del session['foo']
-        self.failIf('foo' in session)
+        self.assertEquals("bar", session["foo"])
+        del session["foo"]
+        self.failIf("foo" in session)
 
         self.failIf(session.last_accessed is None)
         self.assertEquals(True, session.accessed())

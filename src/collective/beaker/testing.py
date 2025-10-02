@@ -1,13 +1,11 @@
-import datetime
-
-from zope.interface import implementer
-from zope.interface import implements
-from zope.component import adapter
-
-from zope.publisher.interfaces import IRequest
-
 from App.config import getConfiguration
 from collective.beaker.interfaces import ISession
+from zope.component import adapter
+from zope.interface import implementer
+from zope.interface import implements
+from zope.publisher.interfaces import IRequest
+
+import datetime
 
 
 class BeakerConfigLayer(object):
@@ -17,27 +15,26 @@ class BeakerConfigLayer(object):
 
     # Simulated ZConfig data
     zconfigData = {
-        'cache.type': 'memory',
-        'cache.regions': 'short, long',
-        'cache.short.expire': '3',
-        'cache.long.expire': '10',
-        'session.type': 'memory',
-        'session.key': 'beaker.session',
-        'session.auto': 'off',
+        "cache.type": "memory",
+        "cache.regions": "short, long",
+        "cache.short.expire": "3",
+        "cache.long.expire": "10",
+        "session.type": "memory",
+        "session.key": "beaker.session",
+        "session.auto": "off",
     }
 
     @classmethod
     def setUp(self):
         cfg = getConfiguration()
-        cfg.product_config = {'beaker': self.zconfigData}
+        cfg.product_config = {"beaker": self.zconfigData}
 
 
 @implementer(ISession)
 class TestSession(dict):
-    """Fake session object that can be used for unit testing
-    """
+    """Fake session object that can be used for unit testing"""
 
-    id = 'test-session'
+    id = "test-session"
     last_accessed = None
 
     # testing variables
@@ -95,4 +92,5 @@ class TestSession(dict):
 @adapter(IRequest)
 def testingSession(request):
     return request._environ.setdefault(
-        'collective.beaker.testing.session', TestSession())
+        "collective.beaker.testing.session", TestSession()
+    )
