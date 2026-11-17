@@ -59,9 +59,9 @@ def beakerConfiguration(_context):
     if cacheConfig:
         cacheManager = CacheManager(**cacheConfig)
         _context.action(
-            discriminator=("utility", ICacheManager, u""),
+            discriminator=("utility", ICacheManager, ""),
             callable=handler,
-            args=("registerUtility", cacheManager, ICacheManager, u""),
+            args=("registerUtility", cacheManager, ICacheManager, ""),
             kw=dict(info=cacheConfig),
         )
 
@@ -75,8 +75,8 @@ def beakerConfiguration(_context):
         sessionConfigWithDefaults.update(sessionConfig)
 
         _context.action(
-            discriminator=("utility", ISessionConfig, u""),
+            discriminator=("utility", ISessionConfig, ""),
             callable=handler,
-            args=("registerUtility", sessionConfigWithDefaults, ISessionConfig, u""),
+            args=("registerUtility", sessionConfigWithDefaults, ISessionConfig, ""),
             kw=dict(info=sessionConfig),
         )

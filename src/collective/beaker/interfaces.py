@@ -16,8 +16,8 @@ class ISession(IMapping):
     interface describes the basic Beaker session type.
     """
 
-    id = schema.ASCIILine(title=u"SHA-1 key for the session")
-    last_accessed = schema.Datetime(title=u"Last access time")
+    id = schema.ASCIILine(title="SHA-1 key for the session")
+    last_accessed = schema.Datetime(title="Last access time")
 
     def accessed():
         """Determine if the session has been accessed (and so needs to be

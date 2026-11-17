@@ -22,6 +22,11 @@ Changelog for collective.beaker
 - Translate HttpOnly cookie flag to correct spelling for Zope.
   [davisagli]
 
+- Add Plone 6 / Python 3 compatibility, drop Plone 4 & 5 / Python 2.
+  [laulaz]
+
+- Switched to PEP 420 native namespace packages. [chris-adam]
+
 
 1.0b3 (2011-05-11)
 ------------------
