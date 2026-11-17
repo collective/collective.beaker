@@ -1,4 +1,4 @@
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 
@@ -13,12 +13,10 @@ setup(
         "Environment :: Web Environment",
         "Framework :: Plone",
         "Framework :: Plone :: Addon",
-        "Framework :: Plone :: 6.0",
-        "Framework :: Plone :: 6.1",
+        "Framework :: Plone :: 6.2",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -30,11 +28,11 @@ setup(
     author_email="optilude@gmail.com",
     url="https://github.com/collective/collective.beaker",
     license="BSD",
-    packages=find_packages("src"),
+    packages=find_namespace_packages("src", include=["collective.*"]),
     package_dir={"": "src"},
-    namespace_packages=["collective"],
     include_package_data=True,
     zip_safe=False,
+    python_requires=">=3.10",
     install_requires=[
         "setuptools",
         "Beaker",
